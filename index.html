@@ -11,6 +11,19 @@
 @keyframes fadeSlide {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+  .cell.gold { color: #FFD700; }
+.cell.silver { color: #C0C0C0; }
+.cell.bronze { color: #CD7F32; }
+
+.total {
+  font-size: 3.6vmin;
+  font-weight: 900;
+  color: #ffffff;
+}
+  .count {
+  display: inline-block;
+  min-width: 2ch;
 }>
 html, body {
   margin:0;
@@ -29,7 +42,37 @@ html, body {
   border:0.6vmin solid rgba(255,255,255,0.12);
   display:flex;
   flex-direction:column;
+  .frame {
+  position: relative;
+  overflow: hidden;
 }
+
+.frame::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  animation: shimmer 12s linear infinite;
+}
+
+@keyframes shimmer {
+  from { transform: translateX(-50%) rotate(25deg); }
+  to   { transform: translateX(50%) rotate(25deg); }
+}
+
+}
+<div style="text-align:center;margin-bottom:1.5vmin;">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Olympic_rings_without_rims.svg"
+       style="width:18vmin; opacity:0.9;">
+</div>
 .title {
   font-size:4.5vmin;
   font-weight:900;
@@ -69,24 +112,22 @@ html, body {
 const API = "https://script.google.com/macros/s/AKfycby3rRAJqUmgRc_pfnlrtjWx7Yof3IvhugY_-f7BxYjeksL5-eNRX67QXhTkIqvhmr4o/exec";
 
 const iocToIso2 = {
-  USA: "US",
-  ITA: "IT",
-  NOR: "NO",
-  NED: "NL",
-  AUT: "AT",
-  GER: "DE",
-  FRA: "FR",
-  CAN: "CA",
-  JPN: "JP",
-  SUI: "CH",
-  SWE: "SE",
-  FIN: "FI",
-  GBR: "GB",
-  KOR: "KR",
-  CHN: "CN"
+  USA: "US", ITA: "IT", NOR: "NO", NED: "NL", AUT: "AT",
+  GER: "DE", FRA: "FR", CAN: "CA", JPN: "JP", SUI: "CH",
+  SWE: "SE", FIN: "FI", GBR: "GB", KOR: "KR", CHN: "CN"
 };
 
 let previousRanks = {};
+
+function animateCount(el, start, end, duration = 600) {
+  const startTime = performance.now();
+  function update(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    el.textContent = Math.floor(progress * (end - start) + start);
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
 
 function getMovement(rank, code) {
   if (!previousRanks[code]) return "";
@@ -104,10 +145,8 @@ async function load() {
     const data = await res.json();
 
     const html = data.top5.map((r) => {
-
       const movement = getMovement(r.rank, r.code);
       previousRanks[r.code] = r.rank;
-
       const iso = iocToIso2[r.code] || null;
 
       const flagImg = iso
@@ -122,19 +161,22 @@ async function load() {
       return `
         <div class="row" style="${highlight}">
           <div class="rank">${r.rank} ${movement}</div>
-          <div class="country">
-            ${flagImg}
-            ${r.name}
-          </div>
-          <div class="cell">${r.gold}</div>
-          <div class="cell">${r.silver}</div>
-          <div class="cell">${r.bronze}</div>
-          <div class="cell total">${r.total}</div>
+          <div class="country">${flagImg}${r.name}</div>
+          <div class="cell gold"><span class="count" data-val="${r.gold}">0</span></div>
+          <div class="cell silver"><span class="count" data-val="${r.silver}">0</span></div>
+          <div class="cell bronze"><span class="count" data-val="${r.bronze}">0</span></div>
+          <div class="cell total"><span class="count" data-val="${r.total}">0</span></div>
         </div>
       `;
     }).join("");
 
     table.innerHTML = html;
+
+    document.querySelectorAll(".count").forEach(el => {
+      const end = Number(el.dataset.val);
+      animateCount(el, 0, end);
+    });
+
     status.textContent = "Updated: " + new Date(data.updatedAt).toLocaleString();
 
   } catch (err) {
@@ -147,6 +189,7 @@ load();
 setInterval(load, 60000);
 
 </script>
+
 
 
 </body>
