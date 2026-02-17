@@ -136,6 +136,14 @@ html, body {
   display:inline-block;
   min-width:2ch;
 }
+ .headerRow {
+  font-weight:900;
+  letter-spacing:1px;
+}
+
+.row {
+  transform-origin:center;
+}
 
 </style>
 </head>
@@ -155,7 +163,21 @@ html, body {
     <div class="title">2026 Winter Olympics Medal Count</div>
   </div>
 
-  <div id="table" class="table"></div>
+  <div class="table">
+
+  <div class="row headerRow" style="opacity:.6; background:none; border:none; animation:none;">
+    <div>#</div>
+    <div>Country</div>
+    <div class="cell gold">🥇</div>
+    <div class="cell silver">🥈</div>
+    <div class="cell bronze">🥉</div>
+    <div class="cell total">🏅</div>
+  </div>
+
+  <div id="rows"></div>
+
+</div>
+
   <div id="status" class="footer">Loading…</div>
 
 </div>
@@ -170,8 +192,7 @@ const iocToIso2 = {
   SWE:"SE", FIN:"FI", GBR:"GB", KOR:"KR", CHN:"CN"
 };
 
-let previousRanks = {};
-let previousTotals = {};
+let previousData = {};
 
 function animateCount(el, start, end, duration=600) {
   const startTime = performance.now();
@@ -183,21 +204,15 @@ function animateCount(el, start, end, duration=600) {
   requestAnimationFrame(update);
 }
 
-function pulse(el) {
-  el.style.transition = "transform .3s ease";
-  el.style.transform = "scale(1.25)";
-  setTimeout(()=> el.style.transform="scale(1)", 300);
-}
-
-function getMovement(rank, code) {
-  if(!previousRanks[code]) return "";
-  if(previousRanks[code] > rank) return " ▲";
-  if(previousRanks[code] < rank) return " ▼";
-  return "";
+function flash(el) {
+  el.style.transition = "background .3s ease";
+  el.style.background = "rgba(255,255,255,0.25)";
+  setTimeout(()=> el.style.background="transparent", 300);
 }
 
 async function load() {
-  const table = document.getElementById("table");
+
+  const container = document.getElementById("rows");
   const status = document.getElementById("status");
 
   try {
@@ -207,63 +222,70 @@ async function load() {
     const usa = data.top5.find(r => r.code === "USA");
     const usaTotal = usa ? usa.total : 0;
 
-    const html = data.top5.map((r) => {
+    const fragment = document.createDocumentFragment();
 
-      const movement = getMovement(r.rank, r.code);
-      previousRanks[r.code] = r.rank;
+    data.top5.forEach((r) => {
 
-      const iso = iocToIso2[r.code] || null;
+      let row = document.getElementById("row_" + r.code);
+
+      if(!row) {
+        row = document.createElement("div");
+        row.className = "row";
+        row.id = "row_" + r.code;
+        row.style.transition = "transform .6s ease, box-shadow .4s ease";
+      }
+
+      const iso = iocToIso2[r.code] || "";
       const flag = iso
         ? `<img src="https://flagcdn.com/w40/${iso.toLowerCase()}.png"
-             style="vertical-align:middle;margin-right:8px;border-radius:4px;">`
-        : "";
-
-      const highlight = r.code === "USA"
-        ? "background:rgba(0,80,255,0.18); border-color:rgba(255,255,255,0.4);"
+           style="vertical-align:middle;margin-right:8px;border-radius:4px;">`
         : "";
 
       const leaderGlow = r.rank === 1
-        ? "box-shadow:0 0 20px rgba(255,215,0,0.35);"
+        ? "box-shadow:0 0 30px rgba(255,215,0,0.5);"
+        : "";
+
+      const highlight = r.code === "USA"
+        ? "background:rgba(0,80,255,0.2); border-color:rgba(255,255,255,0.5);"
         : "";
 
       const delta = r.total - usaTotal;
       const deltaDisplay = r.code === "USA"
         ? ""
-        : `<div style="font-size:2vmin; opacity:.6;">${delta>0? "+"+delta : delta}</div>`;
+        : `<div style="font-size:2vmin; opacity:.5;">${delta>0? "+"+delta : delta}</div>`;
 
-      return `
-        <div class="row" style="${highlight}${leaderGlow}">
-          <div class="rank">${r.rank}${movement}</div>
-          <div class="country">${flag}${r.name}</div>
-          <div class="cell gold"><span class="count" data-code="${r.code}" data-type="gold" data-val="${r.gold}">0</span></div>
-          <div class="cell silver"><span class="count" data-code="${r.code}" data-type="silver" data-val="${r.silver}">0</span></div>
-          <div class="cell bronze"><span class="count" data-code="${r.code}" data-type="bronze" data-val="${r.bronze}">0</span></div>
-          <div class="cell total">
-            <span class="count" data-code="${r.code}" data-type="total" data-val="${r.total}">0</span>
-            ${deltaDisplay}
-          </div>
+      row.style.cssText += leaderGlow + highlight;
+
+      row.innerHTML = `
+        <div class="rank">${r.rank}</div>
+        <div class="country">${flag}${r.name}</div>
+        <div class="cell gold"><span class="count" data-type="gold">${r.gold}</span></div>
+        <div class="cell silver"><span class="count" data-type="silver">${r.silver}</span></div>
+        <div class="cell bronze"><span class="count" data-type="bronze">${r.bronze}</span></div>
+        <div class="cell total">
+          <span class="count" data-type="total">${r.total}</span>
+          ${deltaDisplay}
         </div>
       `;
-    }).join("");
 
-    table.innerHTML = html;
+      const prev = previousData[r.code];
 
-    document.querySelectorAll(".count").forEach(el=>{
-      const code = el.dataset.code;
-      const type = el.dataset.type;
-      const end = Number(el.dataset.val);
-
-      const key = code + "_" + type;
-      const start = previousTotals[key] || 0;
-
-      animateCount(el, start, end);
-
-      if(previousTotals[key] && end > previousTotals[key]) {
-        pulse(el);
+      if(prev) {
+        ["gold","silver","bronze","total"].forEach(type=>{
+          if(r[type] > prev[type]) {
+            const el = row.querySelector(`[data-type="${type}"]`);
+            flash(el);
+          }
+        });
       }
 
-      previousTotals[key] = end;
+      previousData[r.code] = r;
+
+      fragment.appendChild(row);
     });
+
+    container.innerHTML = "";
+    container.appendChild(fragment);
 
     status.textContent = "● LIVE  |  Updated: " + new Date(data.updatedAt).toLocaleString();
 
@@ -277,6 +299,7 @@ load();
 setInterval(load, 60000);
 
 </script>
+
 
 
 </body>
