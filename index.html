@@ -1,30 +1,12 @@
+
 <!doctype html>
 <html>
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Winter Olympics Medal Table</title>
-<style .row {
-  animation: fadeSlide 0.6s ease;
-}
 
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-  .cell.gold { color: #FFD700; }
-.cell.silver { color: #C0C0C0; }
-.cell.bronze { color: #CD7F32; }
-
-.total {
-  font-size: 3.6vmin;
-  font-weight: 900;
-  color: #ffffff;
-}
-  .count {
-  display: inline-block;
-  min-width: 2ch;
-}>
+<style>
 html, body {
   margin:0;
   height:100%;
@@ -32,6 +14,7 @@ html, body {
   color:#fff;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
 }
+
 .frame {
   width:100vmin;
   height:100vmin;
@@ -42,19 +25,19 @@ html, body {
   border:0.6vmin solid rgba(255,255,255,0.12);
   display:flex;
   flex-direction:column;
-  .frame {
-  position: relative;
-  overflow: hidden;
+  position:relative;
+  overflow:hidden;
 }
 
+/* Subtle shimmer */
 .frame::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
+  content:"";
+  position:absolute;
+  top:-50%;
+  left:-50%;
+  width:200%;
+  height:200%;
+  background:linear-gradient(
     115deg,
     rgba(255,255,255,0.03) 25%,
     rgba(255,255,255,0.08) 50%,
@@ -65,26 +48,37 @@ html, body {
 
 @keyframes shimmer {
   from { transform: translateX(-50%) rotate(25deg); }
-  to   { transform: translateX(50%) rotate(25deg); }
+  to { transform: translateX(50%) rotate(25deg); }
 }
 
+.header {
+  text-align:center;
+  margin-bottom:2vmin;
 }
-<div style="text-align:center;margin-bottom:1.5vmin;">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Olympic_rings_without_rims.svg"
-       style="width:18vmin; opacity:0.9;">
-</div>
+
+.header img {
+  width:18vmin;
+  opacity:0.9;
+}
+
 .title {
-  font-size:4.5vmin;
+  font-size:4vmin;
   font-weight:900;
   text-transform:uppercase;
+  letter-spacing:1px;
+  margin-top:1vmin;
 }
+
 .table {
   margin-top:3vmin;
   display:flex;
   flex-direction:column;
   gap:1.5vmin;
   flex:1;
+  position:relative;
+  z-index:2;
 }
+
 .row {
   display:grid;
   grid-template-columns:8vmin 1fr 12vmin 12vmin 12vmin 14vmin;
@@ -92,47 +86,95 @@ html, body {
   border:0.25vmin solid rgba(255,255,255,0.1);
   background:rgba(255,255,255,0.04);
   align-items:center;
+  animation: fadeSlide 0.6s ease;
 }
-.rank { font-size:4vmin; font-weight:900; }
-.country { font-size:3vmin; font-weight:900; }
-.cell { text-align:right; font-size:3vmin; font-weight:900; }
-.total { font-size:3.5vmin; }
-.footer { font-size:2vmin; opacity:0.7; margin-top:2vmin; }
+
+@keyframes fadeSlide {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.rank {
+  font-size:4vmin;
+  font-weight:900;
+}
+
+.country {
+  font-size:3vmin;
+  font-weight:900;
+}
+
+.cell {
+  text-align:right;
+  font-size:3vmin;
+  font-weight:900;
+}
+
+.cell.gold { color:#FFD700; }
+.cell.silver { color:#C0C0C0; }
+.cell.bronze { color:#CD7F32; }
+
+.total {
+  font-size:3.6vmin;
+  color:#ffffff;
+}
+
+.footer {
+  font-size:2vmin;
+  opacity:0.7;
+  margin-top:2vmin;
+  text-align:center;
+}
+
+.count {
+  display:inline-block;
+  min-width:2ch;
+}
+
 </style>
 </head>
+
 <body>
+
 <div class="frame">
-  <div class="title">2026 Winter Olympics Medals</div>
+
+  <div class="header">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Olympic_rings_without_rims.svg">
+    <div class="title">Top 5 Medal Count</div>
+  </div>
+
   <div id="table" class="table"></div>
   <div id="status" class="footer">Loading…</div>
-</div>
-  
-<script>
 
+</div>
+
+<script>
+  
 const API = "https://script.google.com/macros/s/AKfycby3rRAJqUmgRc_pfnlrtjWx7Yof3IvhugY_-f7BxYjeksL5-eNRX67QXhTkIqvhmr4o/exec";
 
+
 const iocToIso2 = {
-  USA: "US", ITA: "IT", NOR: "NO", NED: "NL", AUT: "AT",
-  GER: "DE", FRA: "FR", CAN: "CA", JPN: "JP", SUI: "CH",
-  SWE: "SE", FIN: "FI", GBR: "GB", KOR: "KR", CHN: "CN"
+  USA:"US", ITA:"IT", NOR:"NO", NED:"NL", AUT:"AT",
+  GER:"DE", FRA:"FR", CAN:"CA", JPN:"JP", SUI:"CH",
+  SWE:"SE", FIN:"FI", GBR:"GB", KOR:"KR", CHN:"CN"
 };
 
 let previousRanks = {};
 
-function animateCount(el, start, end, duration = 600) {
+function animateCount(el, start, end, duration=600) {
   const startTime = performance.now();
   function update(now) {
-    const progress = Math.min((now - startTime) / duration, 1);
-    el.textContent = Math.floor(progress * (end - start) + start);
-    if (progress < 1) requestAnimationFrame(update);
+    const progress = Math.min((now - startTime)/duration, 1);
+    el.textContent = Math.floor(progress*(end-start)+start);
+    if(progress < 1) requestAnimationFrame(update);
   }
   requestAnimationFrame(update);
 }
 
 function getMovement(rank, code) {
-  if (!previousRanks[code]) return "";
-  if (previousRanks[code] > rank) return "▲";
-  if (previousRanks[code] < rank) return "▼";
+  if(!previousRanks[code]) return "";
+  if(previousRanks[code] > rank) return " ▲";
+  if(previousRanks[code] < rank) return " ▼";
   return "";
 }
 
@@ -145,23 +187,25 @@ async function load() {
     const data = await res.json();
 
     const html = data.top5.map((r) => {
+
       const movement = getMovement(r.rank, r.code);
       previousRanks[r.code] = r.rank;
+
       const iso = iocToIso2[r.code] || null;
 
-      const flagImg = iso
+      const flag = iso
         ? `<img src="https://flagcdn.com/w40/${iso.toLowerCase()}.png"
              style="vertical-align:middle;margin-right:8px;border-radius:4px;">`
         : "";
 
       const highlight = r.code === "USA"
-        ? "background:rgba(0,80,255,0.15); border-color:rgba(255,255,255,0.4);"
+        ? "background:rgba(0,80,255,0.18); border-color:rgba(255,255,255,0.4);"
         : "";
 
       return `
         <div class="row" style="${highlight}">
-          <div class="rank">${r.rank} ${movement}</div>
-          <div class="country">${flagImg}${r.name}</div>
+          <div class="rank">${r.rank}${movement}</div>
+          <div class="country">${flag}${r.name}</div>
           <div class="cell gold"><span class="count" data-val="${r.gold}">0</span></div>
           <div class="cell silver"><span class="count" data-val="${r.silver}">0</span></div>
           <div class="cell bronze"><span class="count" data-val="${r.bronze}">0</span></div>
@@ -172,14 +216,14 @@ async function load() {
 
     table.innerHTML = html;
 
-    document.querySelectorAll(".count").forEach(el => {
+    document.querySelectorAll(".count").forEach(el=>{
       const end = Number(el.dataset.val);
       animateCount(el, 0, end);
     });
 
     status.textContent = "Updated: " + new Date(data.updatedAt).toLocaleString();
 
-  } catch (err) {
+  } catch(err) {
     console.error(err);
     status.textContent = "Data load failed";
   }
@@ -190,7 +234,6 @@ setInterval(load, 60000);
 
 </script>
 
-
-
 </body>
 </html>
+
