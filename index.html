@@ -68,6 +68,24 @@ html, body {
 
 const API = "https://script.google.com/macros/s/AKfycby3rRAJqUmgRc_pfnlrtjWx7Yof3IvhugY_-f7BxYjeksL5-eNRX67QXhTkIqvhmr4o/exec";
 
+const iocToIso2 = {
+  USA: "US",
+  ITA: "IT",
+  NOR: "NO",
+  NED: "NL",
+  AUT: "AT",
+  GER: "DE",
+  FRA: "FR",
+  CAN: "CA",
+  JPN: "JP",
+  SUI: "CH",
+  SWE: "SE",
+  FIN: "FI",
+  GBR: "GB",
+  KOR: "KR",
+  CHN: "CN"
+};
+
 let previousRanks = {};
 
 function getMovement(rank, code) {
@@ -85,14 +103,17 @@ async function load() {
     const res = await fetch(API);
     const data = await res.json();
 
-    if (!data.top5 || !data.top5.length) {
-      status.textContent = "No medal data";
-      return;
-    }
-
     const html = data.top5.map((r) => {
+
       const movement = getMovement(r.rank, r.code);
       previousRanks[r.code] = r.rank;
+
+      const iso = iocToIso2[r.code] || null;
+
+      const flagImg = iso
+        ? `<img src="https://flagcdn.com/w40/${iso.toLowerCase()}.png"
+             style="vertical-align:middle;margin-right:8px;border-radius:4px;">`
+        : "";
 
       const highlight = r.code === "USA"
         ? "background:rgba(0,80,255,0.15); border-color:rgba(255,255,255,0.4);"
@@ -102,7 +123,7 @@ async function load() {
         <div class="row" style="${highlight}">
           <div class="rank">${r.rank} ${movement}</div>
           <div class="country">
-            <img src="https://flagcdn.com/w40/${r.code.toLowerCase()}.png" style="vertical-align:middle;margin-right:8px;border-radius:4px;">
+            ${flagImg}
             ${r.name}
           </div>
           <div class="cell">${r.gold}</div>
@@ -114,7 +135,6 @@ async function load() {
     }).join("");
 
     table.innerHTML = html;
-
     status.textContent = "Updated: " + new Date(data.updatedAt).toLocaleString();
 
   } catch (err) {
@@ -124,9 +144,10 @@ async function load() {
 }
 
 load();
-setInterval(load, 60000); // 1 minute refresh
+setInterval(load, 60000);
 
 </script>
+
 
 </body>
 </html>
