@@ -6,7 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Winter Olympics Medal Table</title>
 
-<style>
+<style .footer {
+  font-size:2vmin;
+  opacity:0.85;
+  margin-top:2vmin;
+  text-align:center;
+  letter-spacing:.5px;
+}>
 html, body {
   margin:0;
   height:100%;
@@ -155,9 +161,8 @@ html, body {
 </div>
 
 <script>
-  
-const API = "https://script.google.com/macros/s/AKfycby3rRAJqUmgRc_pfnlrtjWx7Yof3IvhugY_-f7BxYjeksL5-eNRX67QXhTkIqvhmr4o/exec";
 
+const API = "https://script.google.com/macros/s/AKfycby3rRAJqUmgRc_pfnlrtjWx7Yof3IvhugY_-f7BxYjeksL5-eNRX67QXhTkIqvhmr4o/exec";
 
 const iocToIso2 = {
   USA:"US", ITA:"IT", NOR:"NO", NED:"NL", AUT:"AT",
@@ -166,6 +171,7 @@ const iocToIso2 = {
 };
 
 let previousRanks = {};
+let previousTotals = {};
 
 function animateCount(el, start, end, duration=600) {
   const startTime = performance.now();
@@ -175,6 +181,12 @@ function animateCount(el, start, end, duration=600) {
     if(progress < 1) requestAnimationFrame(update);
   }
   requestAnimationFrame(update);
+}
+
+function pulse(el) {
+  el.style.transition = "transform .3s ease";
+  el.style.transform = "scale(1.25)";
+  setTimeout(()=> el.style.transform="scale(1)", 300);
 }
 
 function getMovement(rank, code) {
@@ -192,13 +204,15 @@ async function load() {
     const res = await fetch(API);
     const data = await res.json();
 
+    const usa = data.top5.find(r => r.code === "USA");
+    const usaTotal = usa ? usa.total : 0;
+
     const html = data.top5.map((r) => {
 
       const movement = getMovement(r.rank, r.code);
       previousRanks[r.code] = r.rank;
 
       const iso = iocToIso2[r.code] || null;
-
       const flag = iso
         ? `<img src="https://flagcdn.com/w40/${iso.toLowerCase()}.png"
              style="vertical-align:middle;margin-right:8px;border-radius:4px;">`
@@ -208,14 +222,26 @@ async function load() {
         ? "background:rgba(0,80,255,0.18); border-color:rgba(255,255,255,0.4);"
         : "";
 
+      const leaderGlow = r.rank === 1
+        ? "box-shadow:0 0 20px rgba(255,215,0,0.35);"
+        : "";
+
+      const delta = r.total - usaTotal;
+      const deltaDisplay = r.code === "USA"
+        ? ""
+        : `<div style="font-size:2vmin; opacity:.6;">${delta>0? "+"+delta : delta}</div>`;
+
       return `
-        <div class="row" style="${highlight}">
+        <div class="row" style="${highlight}${leaderGlow}">
           <div class="rank">${r.rank}${movement}</div>
           <div class="country">${flag}${r.name}</div>
-          <div class="cell gold"><span class="count" data-val="${r.gold}">0</span></div>
-          <div class="cell silver"><span class="count" data-val="${r.silver}">0</span></div>
-          <div class="cell bronze"><span class="count" data-val="${r.bronze}">0</span></div>
-          <div class="cell total"><span class="count" data-val="${r.total}">0</span></div>
+          <div class="cell gold"><span class="count" data-code="${r.code}" data-type="gold" data-val="${r.gold}">0</span></div>
+          <div class="cell silver"><span class="count" data-code="${r.code}" data-type="silver" data-val="${r.silver}">0</span></div>
+          <div class="cell bronze"><span class="count" data-code="${r.code}" data-type="bronze" data-val="${r.bronze}">0</span></div>
+          <div class="cell total">
+            <span class="count" data-code="${r.code}" data-type="total" data-val="${r.total}">0</span>
+            ${deltaDisplay}
+          </div>
         </div>
       `;
     }).join("");
@@ -223,11 +249,23 @@ async function load() {
     table.innerHTML = html;
 
     document.querySelectorAll(".count").forEach(el=>{
+      const code = el.dataset.code;
+      const type = el.dataset.type;
       const end = Number(el.dataset.val);
-      animateCount(el, 0, end);
+
+      const key = code + "_" + type;
+      const start = previousTotals[key] || 0;
+
+      animateCount(el, start, end);
+
+      if(previousTotals[key] && end > previousTotals[key]) {
+        pulse(el);
+      }
+
+      previousTotals[key] = end;
     });
 
-    status.textContent = "Updated: " + new Date(data.updatedAt).toLocaleString();
+    status.textContent = "● LIVE  |  Updated: " + new Date(data.updatedAt).toLocaleString();
 
   } catch(err) {
     console.error(err);
@@ -239,6 +277,7 @@ load();
 setInterval(load, 60000);
 
 </script>
+
 
 </body>
 </html>
