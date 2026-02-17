@@ -57,9 +57,11 @@ html, body {
   <div id="status" class="footer">Loading…</div>
 </div>
 
-<script>
-const API = "https://script.google.com/macros/s/AKfycby3rRAJqUmgRc_pfnlrtjWx7Yof3IvhugY_-f7BxYjeksL5-eNRX67QXhTkIqvhmr4o/exec");
 
+  
+<script>
+
+const API = "https://script.google.com/macros/s/AKfycby3rRAJqUmgRc_pfnlrtjWx7Yof3IvhugY_-f7BxYjeksL5-eNRX67QXhTkIqvhmr4o/exec");
 
 async function load() {
   const table = document.getElementById("table");
@@ -69,27 +71,14 @@ async function load() {
     const res = await fetch(API);
     const data = await res.json();
 
-    const rows = (data.medalStandings || data.medals || [])
-      .map(r => ({
-        name: r.country?.description || r.description || "Unknown",
-        gold: Number(r.gold || 0),
-        silver: Number(r.silver || 0),
-        bronze: Number(r.bronze || 0)
-      }))
-      .map(r => ({
-        ...r,
-        total: r.gold + r.silver + r.bronze
-      }))
-      .sort((a,b)=>
-        (b.gold-a.gold)||
-        (b.silver-a.silver)||
-        (b.bronze-a.bronze)
-      )
-      .slice(0,5);
+    if (!data.top5 || !data.top5.length) {
+      status.textContent = "No medal data";
+      return;
+    }
 
-    table.innerHTML = rows.map((r,i)=>`
+    table.innerHTML = data.top5.map((r) => `
       <div class="row">
-        <div class="rank">${i+1}</div>
+        <div class="rank">${r.rank}</div>
         <div class="country">${r.name}</div>
         <div class="cell">${r.gold}</div>
         <div class="cell">${r.silver}</div>
@@ -98,14 +87,17 @@ async function load() {
       </div>
     `).join("");
 
-    status.textContent = "Updated: " + new Date().toLocaleString();
-  } catch(e) {
+    status.textContent = "Updated: " + new Date(data.updatedAt).toLocaleString();
+
+  } catch (err) {
+    console.error(err);
     status.textContent = "Data load failed";
   }
 }
 
 load();
 setInterval(load, 300000);
+
 </script>
 
 </body>
