@@ -79,11 +79,11 @@ async function load() {
         ...r,
         total: r.gold + r.silver + r.bronze
       }))
-      .sort((a,b)=>(
+      .sort((a,b)=>
         (b.gold-a.gold)||
         (b.silver-a.silver)||
         (b.bronze-a.bronze)
-      ))
+      )
       .slice(0,5);
 
     table.innerHTML = rows.map((r,i)=>`
