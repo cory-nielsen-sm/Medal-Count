@@ -6,55 +6,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Winter Olympics Medal Table</title>
 
-<style .footer {
-  font-size:2vmin;
-  opacity:0.85;
-  margin-top:2vmin;
-  text-align:center;
-  letter-spacing:.5px;
-}>
+<style>
+
 html, body {
   margin:0;
   height:100%;
-  background:#0b0f18;
+  background:#05070c;
+  font-family: "Segoe UI", Roboto, system-ui, sans-serif;
   color:#fff;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  overflow:hidden;
 }
 
+/* Studio Background */
 .frame {
   width:100vmin;
   height:100vmin;
   margin:0 auto;
   padding:4vmin;
   box-sizing:border-box;
-  background: radial-gradient(120% 120% at 20% 10%, #162447 0%, #0b0f18 55%, #05060a 100%);
-  border:0.6vmin solid rgba(255,255,255,0.12);
   display:flex;
   flex-direction:column;
   position:relative;
-  overflow:hidden;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(0,80,255,0.2), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(255,215,0,0.15), transparent 40%),
+    linear-gradient(180deg,#0b1326 0%,#05070c 100%);
+  border:0.5vmin solid rgba(255,255,255,0.08);
+  box-shadow:0 0 60px rgba(0,0,0,0.7);
 }
 
-/* Subtle shimmer */
-.frame::before {
+/* Subtle Vignette */
+.frame::after {
   content:"";
   position:absolute;
-  top:-50%;
-  left:-50%;
-  width:200%;
-  height:200%;
-  background:linear-gradient(
-    115deg,
-    rgba(255,255,255,0.03) 25%,
-    rgba(255,255,255,0.08) 50%,
-    rgba(255,255,255,0.03) 75%
-  );
-  animation: shimmer 12s linear infinite;
-}
-
-@keyframes shimmer {
-  from { transform: translateX(-50%) rotate(25deg); }
-  to { transform: translateX(50%) rotate(25deg); }
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.6) 100%);
 }
 
 .header {
@@ -62,25 +49,32 @@ html, body {
   margin-bottom:2vmin;
 }
 
-.header img {
-  width:18vmin;
-  opacity:0.9;
-}
-
 .title {
-  font-size:4vmin;
-  font-weight:900;
-  text-transform:uppercase;
-  letter-spacing:1px;
+  font-size:4.2vmin;
+  font-weight:800;
+  letter-spacing:2px;
   margin-top:1vmin;
 }
 
+/* Header Row */
+.headerRow {
+  display:grid;
+  grid-template-columns:8vmin 1fr 12vmin 12vmin 12vmin 14vmin;
+  padding:1.8vmin;
+  margin-bottom:1vmin;
+  font-size:2.2vmin;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  background:linear-gradient(90deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));
+  border-bottom:1px solid rgba(255,255,255,0.2);
+}
+
 .table {
-  margin-top:3vmin;
+  flex:1;
   display:flex;
   flex-direction:column;
-  gap:1.5vmin;
-  flex:1;
+  gap:1.2vmin;
   position:relative;
   z-index:2;
 }
@@ -89,15 +83,10 @@ html, body {
   display:grid;
   grid-template-columns:8vmin 1fr 12vmin 12vmin 12vmin 14vmin;
   padding:2vmin;
-  border:0.25vmin solid rgba(255,255,255,0.1);
-  background:rgba(255,255,255,0.04);
   align-items:center;
-  animation: fadeSlide 0.6s ease;
-}
-
-@keyframes fadeSlide {
-  from { opacity:0; transform:translateY(8px); }
-  to { opacity:1; transform:translateY(0); }
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  transition:transform .6s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease;
 }
 
 .rank {
@@ -107,22 +96,60 @@ html, body {
 
 .country {
   font-size:3vmin;
-  font-weight:900;
+  font-weight:700;
 }
 
 .cell {
   text-align:right;
   font-size:3vmin;
-  font-weight:900;
+  font-weight:800;
 }
 
 .cell.gold { color:#FFD700; }
-.cell.silver { color:#C0C0C0; }
-.cell.bronze { color:#CD7F32; }
+.cell.silver { color:#D6D6D6; }
+.cell.bronze { color:#C68642; }
 
 .total {
-  font-size:3.6vmin;
-  color:#ffffff;
+  font-size:3.5vmin;
+}
+
+.liveBug {
+  position:absolute;
+  top:2vmin;
+  right:3vmin;
+  font-size:2vmin;
+  font-weight:700;
+  letter-spacing:1px;
+  display:flex;
+  align-items:center;
+  gap:0.6vmin;
+}
+
+.liveDot {
+  width:1vmin;
+  height:1vmin;
+  background:red;
+  border-radius:50%;
+  animation:pulseLive 1.5s infinite;
+}
+
+@keyframes pulseLive {
+  0% { opacity:1; transform:scale(1); }
+  50% { opacity:.4; transform:scale(1.5); }
+  100% { opacity:1; transform:scale(1); }
+}
+
+.leaderGlow {
+  box-shadow:0 0 25px rgba(255,215,0,0.4);
+}
+
+.flash {
+  animation:flash 0.4s ease;
+}
+
+@keyframes flash {
+  0% { background:rgba(255,255,255,0.3); }
+  100% { background:transparent; }
 }
 
 .footer {
@@ -132,26 +159,19 @@ html, body {
   text-align:center;
 }
 
-.count {
-  display:inline-block;
-  min-width:2ch;
-}
- .headerRow {
-  font-size:1vmin;
-  font-weight:900;
-  letter-spacing:1px;
-}
-
-.row {
-  transform-origin:center;
-}
-
 </style>
+
 </head>
 
 <body>
 
 <div class="frame">
+
+<div class="liveBug">
+  <div class="liveDot"></div>
+  LIVE
+</div>
+
 
   <div class="header">
     <svg viewBox="0 0 300 130" style="width:18vmin; opacity:0.9;">
@@ -242,6 +262,9 @@ async function load() {
         : "";
 
       const leaderGlow = r.rank === 1
+        if(r.rank === 1) row.classList.add("leaderGlow");
+        else row.classList.remove("leaderGlow");
+
         ? "box-shadow:0 0 30px rgba(255,215,0,0.5);"
         : "";
 
