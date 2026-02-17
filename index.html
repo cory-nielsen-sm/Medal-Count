@@ -4,7 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Winter Olympics Medal Table</title>
-<style>
+<style .row {
+  animation: fadeSlide 0.6s ease;
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}>
 html, body {
   margin:0;
   height:100%;
@@ -61,6 +68,15 @@ html, body {
 
 const API = "https://script.google.com/macros/s/AKfycby3rRAJqUmgRc_pfnlrtjWx7Yof3IvhugY_-f7BxYjeksL5-eNRX67QXhTkIqvhmr4o/exec";
 
+let previousRanks = {};
+
+function getMovement(rank, code) {
+  if (!previousRanks[code]) return "";
+  if (previousRanks[code] > rank) return "▲";
+  if (previousRanks[code] < rank) return "▼";
+  return "";
+}
+
 async function load() {
   const table = document.getElementById("table");
   const status = document.getElementById("status");
@@ -74,16 +90,30 @@ async function load() {
       return;
     }
 
-    table.innerHTML = data.top5.map((r) => `
-      <div class="row">
-        <div class="rank">${r.rank}</div>
-        <div class="country">${r.name}</div>
-        <div class="cell">${r.gold}</div>
-        <div class="cell">${r.silver}</div>
-        <div class="cell">${r.bronze}</div>
-        <div class="cell total">${r.total}</div>
-      </div>
-    `).join("");
+    const html = data.top5.map((r) => {
+      const movement = getMovement(r.rank, r.code);
+      previousRanks[r.code] = r.rank;
+
+      const highlight = r.code === "USA"
+        ? "background:rgba(0,80,255,0.15); border-color:rgba(255,255,255,0.4);"
+        : "";
+
+      return `
+        <div class="row" style="${highlight}">
+          <div class="rank">${r.rank} ${movement}</div>
+          <div class="country">
+            <img src="https://flagcdn.com/w40/${r.code.toLowerCase()}.png" style="vertical-align:middle;margin-right:8px;border-radius:4px;">
+            ${r.name}
+          </div>
+          <div class="cell">${r.gold}</div>
+          <div class="cell">${r.silver}</div>
+          <div class="cell">${r.bronze}</div>
+          <div class="cell total">${r.total}</div>
+        </div>
+      `;
+    }).join("");
+
+    table.innerHTML = html;
 
     status.textContent = "Updated: " + new Date(data.updatedAt).toLocaleString();
 
@@ -94,7 +124,7 @@ async function load() {
 }
 
 load();
-setInterval(load, 300000);
+setInterval(load, 60000); // 1 minute refresh
 
 </script>
 
