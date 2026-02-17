@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Winter Olympics Medal Table</title>
+<style>
+html, body {
+  margin:0;
+  height:100%;
+  background:#0b0f18;
+  color:#fff;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+.frame {
+  width:100vmin;
+  height:100vmin;
+  margin:0 auto;
+  padding:4vmin;
+  box-sizing:border-box;
+  background: radial-gradient(120% 120% at 20% 10%, #162447 0%, #0b0f18 55%, #05060a 100%);
+  border:0.6vmin solid rgba(255,255,255,0.12);
+  display:flex;
+  flex-direction:column;
+}
+.title {
+  font-size:4.5vmin;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.table {
+  margin-top:3vmin;
+  display:flex;
+  flex-direction:column;
+  gap:1.5vmin;
+  flex:1;
+}
+.row {
+  display:grid;
+  grid-template-columns:8vmin 1fr 12vmin 12vmin 12vmin 14vmin;
+  padding:2vmin;
+  border:0.25vmin solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);
+  align-items:center;
+}
+.rank { font-size:4vmin; font-weight:900; }
+.country { font-size:3vmin; font-weight:900; }
+.cell { text-align:right; font-size:3vmin; font-weight:900; }
+.total { font-size:3.5vmin; }
+.footer { font-size:2vmin; opacity:0.7; margin-top:2vmin; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="title">Medal Table • Top 5</div>
+  <div id="table" class="table"></div>
+  <div id="status" class="footer">Loading…</div>
+</div>
+
+<script>
+const API = "https://www.olympics.com/wmr-owg2026/competition/api/en/medals";
+
+async function load() {
+  const table = document.getElementById("table");
+  const status = document.getElementById("status");
+
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+
+    const rows = (data.medalStandings || data.medals || [])
+      .map(r => ({
+        name: r.country?.description || r.description || "Unknown",
+        gold: Number(r.gold || 0),
+        silver: Number(r.silver || 0),
+        bronze: Number(r.bronze || 0)
+      }))
+      .map(r => ({
+        ...r,
+        total: r.gold + r.silver + r.bronze
+      }))
+      .sort((a,b)=>(
+        (b.gold-a.gold)||
+        (b.silver-a.silver)||
+        (b.bronze-a.bronze)
+      ))
+      .slice(0,5);
+
+    table.innerHTML = rows.map((r,i)=>`
+      <div class="row">
+        <div class="rank">${i+1}</div>
+        <div class="country">${r.name}</div>
+        <div class="cell">${r.gold}</div>
+        <div class="cell">${r.silver}</div>
+        <div class="cell">${r.bronze}</div>
+        <div class="cell total">${r.total}</div>
+      </div>
+    `).join("");
+
+    status.textContent = "Updated: " + new Date().toLocaleString();
+  } catch(e) {
+    status.textContent = "Data load failed";
+  }
+}
+
+load();
+setInterval(load, 300000);
+</script>
+
+</body>
+</html>
