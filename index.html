@@ -58,7 +58,8 @@ html, body {
 </div>
 
 <script>
-const API = "https://www.olympics.com/wmr-owg2026/competition/api/en/medals";
+const API = "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://www.olympics.com/wmr-owg2026/competition/api/en/medals");
+
 
 async function load() {
   const table = document.getElementById("table");
