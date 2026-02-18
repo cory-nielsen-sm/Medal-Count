@@ -321,7 +321,7 @@ async function load() {
     });
 
     container.innerHTML = "";
-    container.appendChild(row);
+    container.appendChild(fragment);
 
     status.textContent = "● LIVE  |  Updated: " + new Date(data.updatedAt).toLocaleString();
 
