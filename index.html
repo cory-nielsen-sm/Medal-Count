@@ -120,6 +120,9 @@ html, body {
 }
 
 .country {
+  display:flex;
+  align-items:center;
+  perspective: 800px;
   font-size:3vw;
   font-weight:700;
   white-space:nowrap;
@@ -139,10 +142,11 @@ html, body {
 .cell.bronze { color:#C68642; }
 
 .flag {
-  width:3vw;
+  width:5vw;
   border-radius:2px;
-  margin-right:8px;
+  transform-origin:left center;
   animation:wave 3s ease-in-out infinite;
+  backface-visibility:hidden;
 }
 
 @keyframes wave {
