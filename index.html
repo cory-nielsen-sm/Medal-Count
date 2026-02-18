@@ -70,6 +70,28 @@ html, body {
   background:linear-gradient(90deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));
   border-bottom:1px solid rgba(255,255,255,0.2);
 }
+  
+/* Header Medal Styling */
+.headerRow .cell {
+  font-size: 3.5vw;   /* bigger medals */
+  text-align: center;
+  animation: medalFloat 3s ease-in-out infinite;
+}
+
+.headerRow .cell:nth-child(3) { animation-delay: 0s; }
+.headerRow .cell:nth-child(4) { animation-delay: .3s; }
+.headerRow .cell:nth-child(5) { animation-delay: .6s; }
+
+.headerRow .gold   { text-shadow: 0 0 15px rgba(255,215,0,.6); }
+.headerRow .silver { text-shadow: 0 0 12px rgba(255,255,255,.6); }
+.headerRow .bronze { text-shadow: 0 0 12px rgba(198,134,66,.6); }
+
+
+@keyframes medalFloat {
+  0%   { transform: translateY(0px) scale(1); }
+  50%  { transform: translateY(-6px) scale(1.1); }
+  100% { transform: translateY(0px) scale(1); }
+}
 
 .table {
   flex:1;
@@ -113,6 +135,22 @@ html, body {
 .cell.gold { color:#FFD700; }
 .cell.silver { color:#D6D6D6; }
 .cell.bronze { color:#C68642; }
+
+.flag {
+  width: 3vw;
+  height: auto;
+  border-radius: 4px;
+  margin-right: 8px;
+  display: inline-block;
+  transform-origin: left center;
+  animation: wave 3s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0%   { transform: perspective(400px) rotateY(0deg); }
+  50%  { transform: perspective(400px) rotateY(6deg); }
+  100% { transform: perspective(400px) rotateY(0deg); }
+}
 
 .total {
   font-size:3vmin;
@@ -276,7 +314,7 @@ async function load() {
 
       const iso = iocToIso2[r.code] || "";
       const flag = iso
-        ? `<img src="https://flagcdn.com/w40/${iso.toLowerCase()}.png"
+        ? `<img class="flag" src="https://flagcdn.com/w40/${iso.toLowerCase()}.png"
            style="vertical-align:middle;margin-right:8px;border-radius:4px;">`
         : "";
 
