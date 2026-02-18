@@ -149,9 +149,9 @@ html, body {
 }
 
 @keyframes wave {
-  0%   { transform: perspective(400px) rotateY(0deg); }
-  50%  { transform: perspective(400px) rotateY(6deg); }
-  100% { transform: perspective(400px) rotateY(0deg); }
+  0%   { transform: skewX(0deg) scaleX(1); }
+  50%  { transform: skewX(6deg) scaleX(1.03); }
+  100% { transform: skewX(0deg) scaleX(1); }
 }
 
 .total {
