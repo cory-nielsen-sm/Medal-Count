@@ -59,9 +59,8 @@ html, body {
 /* Header Row */
 .headerRow {
   display:grid;
-  grid-template-columns:6vw .2fr 1fr 3fr 3fr 3fr;
+  grid-template-columns:6vw 2.5fr 1fr 1fr 1fr 1.2fr;
   padding:1.8vmin;
-  text-align:right;
   margin-bottom:1vmin;
   font-size:2vmin;
   font-weight:900;
@@ -69,12 +68,14 @@ html, body {
   letter-spacing:1px;
   background:linear-gradient(90deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));
   border-bottom:1px solid rgba(255,255,255,0.2);
+  align-items:center;
 }
   
 /* Header Medal Styling */
 .headerRow .cell {
-  font-size: 3.5vw;   /* bigger medals */
-  text-align: center;
+  font-size: 3.0vw;
+  text-align: right;     /* <-- key fix */
+  padding-right: 0.2vw;  /* tiny nudge so it visually matches numbers */
   animation: medalFloat 3s ease-in-out infinite;
 }
 
@@ -104,7 +105,7 @@ html, body {
 
 .row {
   display:grid;
-  grid-template-columns:6vw 2.2fr 1fr 1fr 1fr 1.2fr;
+  grid-template-columns:6vw 2.5fr 1fr 1fr 1fr 1.2fr;
   padding:2vmin;
   align-items:center;
   background:rgba(255,255,255,0.04);
