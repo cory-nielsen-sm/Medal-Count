@@ -292,9 +292,12 @@ async function load() {
 
       if(prev) {
         ["gold","silver","bronze","total"].forEach(type=>{
-          if(r[type] > prev[type]) {
-            const el = row.querySelector(`[data-type="${type}"]`);
-            flash(el);
+        if(r[type] > prev[type]) {
+          const el = row.querySelector(`[data-type="${type}"]`);
+          el.classList.add("flash");
+          setTimeout(()=> el.classList.remove("flash"), 400);
+}
+
           }
         });
       }
