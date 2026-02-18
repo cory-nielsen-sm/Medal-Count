@@ -214,6 +214,8 @@ const iocToIso2 = {
 };
 
 let previousData = {};
+let lastTop5Snapshot = "";
+
 
 function animateCount(el, start, end, duration=600) {
   const startTime = performance.now();
@@ -240,6 +242,18 @@ async function load() {
     const res = await fetch(API);
     const data = await res.json();
 
+    // Make a stable snapshot string of top5 (only the fields that matter)
+    const snapshot = (data.top5 || [])
+    .map(r => `${r.code}:${r.rank}:${r.gold}:${r.silver}:${r.bronze}:${r.total}`)
+    .join("|");
+    if (snapshot === lastTop5Snapshot) {
+  // Still update the timestamp so you know it’s alive
+    status.textContent = "● LIVE  |  Updated: " + new Date(data.updatedAt).toLocaleString();
+    return;
+    }
+
+    lastTop5Snapshot = snapshot;
+
     const usa = data.top5.find(r => r.code === "USA");
     const usaTotal = usa ? usa.total : 0;
 
@@ -262,7 +276,6 @@ async function load() {
            style="vertical-align:middle;margin-right:8px;border-radius:4px;">`
         : "";
 
-      const leaderGlow = r.rank === 1
         if(r.rank === 1) row.classList.add("leaderGlow");
         else row.classList.remove("leaderGlow");
 
@@ -275,7 +288,7 @@ async function load() {
         ? ""
         : `<div style="font-size:2vmin; opacity:.5;">${delta>0? "+"+delta : delta}</div>`;
 
-      row.style.cssText += leaderGlow + highlight;
+      row.style.cssText = highlight;
 
       row.innerHTML = `
         <div class="rank">${r.rank}</div>
@@ -308,7 +321,7 @@ async function load() {
     });
 
     container.innerHTML = "";
-    container.appendChild(fragment);
+    container.appendChild(row);
 
     status.textContent = "● LIVE  |  Updated: " + new Date(data.updatedAt).toLocaleString();
 
