@@ -139,20 +139,18 @@ html, body {
 .cell.bronze { color:#C68642; }
 
 .flag {
-  width: 3vw;
-  height: auto;
-  border-radius: 4px;
-  margin-right: 8px;
-  display: inline-block;
-  transform-origin: left center;
-  animation: wave 3s ease-in-out infinite;
+  width:3vw;
+  border-radius:2px;
+  margin-right:8px;
+  animation:wave 3s ease-in-out infinite;
 }
 
 @keyframes wave {
-  0%   { transform: skewX(0deg) scaleX(1); }
-  50%  { transform: skewX(6deg) scaleX(1.03); }
-  100% { transform: skewX(0deg) scaleX(1); }
+  0%   { transform: skewX(0deg); }
+  50%  { transform: skewX(8deg); }
+  100% { transform: skewX(0deg); }
 }
+
 
 .total {
   font-size:3vw;
